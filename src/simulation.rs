@@ -15,6 +15,8 @@ pub struct Simulation {
     acceleration: [f32; 2], // meters/seconds^2
     reynolds: f32,
     time: f32, // seconds
+    initial_pressure_norm: Option<f32>,
+    fluid_cell_count: Option<u32>,
 }
 
 impl Default for Simulation {
@@ -37,6 +39,8 @@ impl Simulation {
             reynolds: preset.reynolds,
             acceleration: preset.acceleration,
             time: 0.0,
+            initial_pressure_norm: None,
+            fluid_cell_count: None,
         }
     }
 
@@ -141,11 +145,12 @@ impl Simulation {
         }
     }
 
-    fn solve_poisson_pressure_equation(&mut self) {
-        let space_size = self.space_domain.space_size();
-        let delta_space = self.space_domain.delta_space();
-
+    fn get_initial_pressure_norm(&mut self) -> (f32, u32) {
+        if let Some(x) = self.initial_pressure_norm {
+            return (x, self.fluid_cell_count.unwrap());
+        }
         let mut fluid_cell_count = 0;
+        let space_size = self.space_domain.space_size();
         let mut initial_pressure_norm: f32 = (0..space_size[0])
             .map(|x| -> f32 {
                 (0..space_size[1])
@@ -164,6 +169,16 @@ impl Simulation {
             / (fluid_cell_count as f32);
 
         initial_pressure_norm = initial_pressure_norm.sqrt();
+        self.initial_pressure_norm = Some(initial_pressure_norm);
+        self.fluid_cell_count = Some(fluid_cell_count);
+        (initial_pressure_norm, fluid_cell_count)
+    }
+
+    fn solve_poisson_pressure_equation(&mut self) {
+        let space_size = self.space_domain.space_size();
+        let delta_space = self.space_domain.delta_space();
+
+        let (initial_pressure_norm, fluid_cell_count) = self.get_initial_pressure_norm();
 
         for _ in 0..ITR_MAX {
             let mut residual_norm: f32 = (0..space_size[0])
