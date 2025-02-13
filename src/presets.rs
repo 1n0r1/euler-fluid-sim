@@ -71,11 +71,15 @@ pub fn backward_facing_step() -> SimulationPreset {
     let x: usize = 150;
     let y: usize = 75;
 
+    let inflow_x_velocity = 1.0;
+
     let mut space_domain: Vec<Vec<Cell>> = Vec::with_capacity(x);
     for _ in 0..x {
         let mut row = Vec::with_capacity(y);
         for _ in 0..y {
-            row.push(Cell::default());
+            // Set initial fluid velocity to be equal to the inflow velocity to
+            // speed up convergence at the beginning of the simulation.
+            row.push(Cell { velocity: [inflow_x_velocity, 0.0], ..Default::default() });
         }
         space_domain.push(row);
     }
@@ -85,7 +89,7 @@ pub fn backward_facing_step() -> SimulationPreset {
             if xi == 0 {
                 space_domain[xi][yi] = Cell {
                     cell_type: CellType::BoundaryConditionCell(BoundaryConditionCell::InflowCell),
-                    velocity: [1.0, 0.0],
+                    velocity: [inflow_x_velocity, 0.0],
                     ..Default::default()
                 };
                 continue;
@@ -155,11 +159,15 @@ pub fn cylinder_cross_flow() -> SimulationPreset {
     let x: usize = 110;
     let y: usize = 41;
 
+    let inflow_x_velocity = 1.5;
+
     let mut space_domain: Vec<Vec<Cell>> = Vec::with_capacity(x);
     for _ in 0..x {
         let mut row = Vec::with_capacity(y);
         for _ in 0..y {
-            row.push(Cell::default());
+            // Set initial fluid velocity to be equal to the inflow velocity to
+            // speed up convergence at the beginning of the simulation.
+            row.push(Cell { velocity: [inflow_x_velocity, 0.0], ..Default::default() });
         }
         space_domain.push(row);
     }
@@ -169,7 +177,7 @@ pub fn cylinder_cross_flow() -> SimulationPreset {
             if xi == 0 {
                 space_domain[xi][yi] = Cell {
                     cell_type: CellType::BoundaryConditionCell(BoundaryConditionCell::InflowCell),
-                    velocity: [1.5, 0.0],
+                    velocity: [inflow_x_velocity, 0.0],
                     ..Default::default()
                 };
                 continue;
